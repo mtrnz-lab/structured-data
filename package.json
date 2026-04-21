@@ -1,0 +1,13 @@
+{
+  "name": "dom-metadata-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monitor giornaliero di metadati e dati strutturati con dashboard web e alert.",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "playwright": "^1.59.1"
+  }
+}

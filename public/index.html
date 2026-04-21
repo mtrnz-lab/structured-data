@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DOM Metadata Monitor</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Controllo SEO tecnico</p>
+          <h1>Dashboard monitoraggio DOM, metadata e dati strutturati</h1>
+          <p class="lede">
+            Ogni URL viene controllata ogni 24 ore. Il sistema salva una baseline, confronta i
+            metadati e i dati strutturati renderizzati e segnala gli scostamenti.
+          </p>
+        </div>
+        <div class="hero-card" id="status-cards"></div>
+      </header>
+
+      <main class="grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Aggiungi URL</h2>
+            <p>Inserimento manuale e avvio automatico del primo check.</p>
+          </div>
+
+          <form id="target-form" class="stack">
+            <label>
+              <span>URL</span>
+              <input id="url" name="url" type="url" placeholder="https://www.esempio.it/pagina" required />
+            </label>
+
+            <label>
+              <span>Etichetta</span>
+              <input id="label" name="label" type="text" placeholder="Homepage Italia" />
+            </label>
+
+            <button type="submit">Aggiungi e monitora</button>
+          </form>
+
+          <p class="hint" id="form-feedback"></p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Alert aperti</h2>
+            <p>Notifiche generate quando qualcosa cambia nel codice o nei controlli di visibilita.</p>
+          </div>
+          <div id="alerts-list" class="stack"></div>
+        </section>
+
+        <section class="panel panel-wide">
+          <div class="panel-head">
+            <h2>URL monitorate</h2>
+            <p>Stato corrente, ultima scansione, baseline e comandi rapidi.</p>
+          </div>
+          <div id="targets-list" class="card-grid"></div>
+        </section>
+      </main>
+
+      <footer class="page-footer">
+        <p>Created by Federico Rebeschini, head of SEO/GEO and vibe coding enthusiast</p>
+      </footer>
+    </div>
+
+    <template id="empty-state-template">
+      <div class="empty-state">
+        <p>Nessun elemento disponibile per ora.</p>
+      </div>
+    </template>
+
+    <script src="/app.js" defer></script>
+  </body>
+  </html>
