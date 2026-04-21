@@ -286,7 +286,7 @@ button.ghost {
 }
 
 .details-drawer[open] summary::after {
-  content: "−";
+  content: "-";
 }
 
 .details-grid {

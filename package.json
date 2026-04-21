@@ -5,9 +5,17 @@
   "description": "Monitor giornaliero di metadati e dati strutturati con dashboard web e alert.",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "cf:pages:dev": "wrangler pages dev public --config wrangler.pages.jsonc",
+    "cf:pages:deploy": "wrangler pages deploy public --config wrangler.pages.jsonc",
+    "cf:db:apply-local": "wrangler d1 execute structured-data-monitor --local --config wrangler.pages.jsonc --file migrations/001_init.sql",
+    "cf:db:apply-remote": "wrangler d1 execute structured-data-monitor --remote --config wrangler.pages.jsonc --file migrations/001_init.sql",
+    "cf:cron:deploy": "wrangler deploy --config wrangler.scheduler.jsonc"
   },
   "dependencies": {
     "playwright": "^1.59.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.42.0"
   }
 }

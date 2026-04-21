@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "structured-data-pages",
+  "pages_build_output_dir": "./public",
+  "compatibility_date": "2026-04-21",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "structured-data-monitor",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+  "vars": {
+    "BROWSER_RUN_API_BASE": "https://api.cloudflare.com/client/v4",
+    "MONITOR_CHECK_TIMEOUT_MS": "45000"
+  }
+}

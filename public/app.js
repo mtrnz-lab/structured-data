@@ -26,7 +26,7 @@ function truncateText(value, maxLength = 180) {
     return "";
   }
 
-  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
+  return value.length > maxLength ? `${value.slice(0, maxLength - 3)}...` : value;
 }
 
 function fullscreenIcon(expanded) {
