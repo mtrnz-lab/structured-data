@@ -226,6 +226,12 @@ async function handleApi(request, response, pathname) {
       if (current.lastSnapshot) {
         current.baselineSnapshot = current.lastSnapshot;
         current.status = "ok";
+        for (const alert of state.alerts) {
+          if (alert.targetId === targetId && alert.status === "open" && alert.type === "diff") {
+            alert.status = "acknowledged";
+            alert.acknowledgedAt = new Date().toISOString();
+          }
+        }
       } else {
         current.baselineSnapshot = null;
         current.status = "queued";

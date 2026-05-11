@@ -366,6 +366,18 @@ export async function ackAlert(env, alertId) {
   return mapAlertRow(updated);
 }
 
+export async function ackOpenDiffAlertsForTarget(env, targetId) {
+  const now = getNowIso();
+
+  await execute(
+    env,
+    `UPDATE alerts
+     SET status = 'acknowledged', acknowledged_at = ?
+     WHERE target_id = ? AND status = 'open' AND type = 'diff'`,
+    [now, targetId]
+  );
+}
+
 export async function deleteTarget(env, targetId) {
   await execute(env, "DELETE FROM alerts WHERE target_id = ?", [targetId]);
   await execute(env, "DELETE FROM runs WHERE target_id = ?", [targetId]);
@@ -415,6 +427,8 @@ export async function resetBaseline(env, targetId) {
       status: "ok",
       updatedAt,
     });
+
+    await ackOpenDiffAlertsForTarget(env, targetId);
   } else {
     await setTargetFields(env, targetId, {
       baselineSnapshot: null,

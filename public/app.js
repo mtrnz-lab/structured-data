@@ -444,7 +444,12 @@ document.addEventListener("click", async (event) => {
     }
 
     if (button.dataset.targetBaseline) {
-      await api(`/api/targets/${button.dataset.targetBaseline}/reset-baseline`, { method: "POST" });
+      const target = await api(`/api/targets/${button.dataset.targetBaseline}/reset-baseline`, {
+        method: "POST",
+      });
+      feedback.textContent = target.lastSnapshot
+        ? "Baseline updated from the latest snapshot."
+        : "No snapshot is available yet. A fresh check has been queued.";
     }
 
     if (button.dataset.targetToggle) {
