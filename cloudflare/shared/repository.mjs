@@ -235,6 +235,33 @@ export async function getDashboardStatus(env) {
   };
 }
 
+export async function exportMonitoringData(env) {
+  const [targets, alerts, runs, appStateRows, runtime] = await Promise.all([
+    queryAll(env, "SELECT * FROM targets ORDER BY created_at ASC"),
+    queryAll(env, "SELECT * FROM alerts ORDER BY created_at DESC"),
+    queryAll(env, "SELECT * FROM runs ORDER BY started_at DESC"),
+    queryAll(env, "SELECT key, value, updated_at FROM app_state ORDER BY key ASC"),
+    getRuntimeStatus(env),
+  ]);
+
+  return {
+    alerts: alerts.map(mapAlertRow),
+    appState: appStateRows.map((row) => ({
+      key: row.key,
+      updatedAt: row.updated_at,
+      value: row.value,
+    })),
+    exportedAt: getNowIso(),
+    runs: runs.map(mapRunRow),
+    runtime,
+    storage: {
+      mode: "cloudflare-d1",
+      path: "Cloudflare D1",
+    },
+    targets: targets.map(mapTargetRow),
+  };
+}
+
 export async function insertRun(env, run) {
   await execute(
     env,

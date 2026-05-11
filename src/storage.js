@@ -59,10 +59,15 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+async function exportState() {
+  return clone(await readState());
+}
+
 module.exports = {
   DB_PATH,
   clone,
   ensureStorage,
+  exportState,
   readState,
   withState,
 };

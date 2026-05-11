@@ -267,6 +267,13 @@ body.has-expanded-card {
   margin-bottom: 20px;
 }
 
+.panel-head-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .panel-head p {
   margin: 10px 0 0;
 }
@@ -841,6 +848,11 @@ button.ghost {
 
   .actions {
     flex-direction: column;
+  }
+
+  .panel-head-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .target-head,

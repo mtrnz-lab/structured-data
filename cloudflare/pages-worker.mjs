@@ -1,6 +1,7 @@
 import {
   ackAlert,
   deleteTarget,
+  exportMonitoringData,
   getDashboardStatus,
   listAlerts,
   listTargets,
@@ -36,6 +37,21 @@ async function handleApi(request, env, ctx, pathname) {
 
   if (request.method === "GET" && pathname === "/api/alerts") {
     return jsonResponse(await listAlerts(env));
+  }
+
+  if (request.method === "GET" && pathname === "/api/export") {
+    const payload = await exportMonitoringData(env);
+    const filename = `dom-metadata-monitor-backup-${new Date().toISOString().slice(0, 10)}.json`;
+
+    return withSecurityHeaders(
+      new Response(JSON.stringify(payload, null, 2), {
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+      })
+    );
   }
 
   if (request.method === "POST" && pathname === "/api/targets") {

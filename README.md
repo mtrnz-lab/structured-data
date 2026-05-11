@@ -180,6 +180,61 @@ If you want to change the schedule, edit `wrangler.scheduler.jsonc`.
 - endpoints accept only `http/https` URLs and block local or private hosts
 - both the online and local dashboards require HTTP Basic authentication
 
+## Operations checklist
+
+Before treating the monitor as production-ready, make sure you cover these operational basics:
+
+- rotate `MONITOR_USERNAME` and `MONITOR_PASSWORD` from the temporary bootstrap values
+- download regular backups from the dashboard with `Download backup`
+- confirm the daily cron by validating at least one real target and one alert cycle
+- keep at least one external copy of every exported JSON backup
+
+## Backup export
+
+The dashboard now exposes a `Download backup` action. It downloads a JSON export containing:
+
+- targets
+- alerts
+- runs
+- runtime status
+- local JSON metadata or Cloudflare D1 app state metadata
+
+Useful endpoints:
+
+- local Node mode: `/api/export`
+- Cloudflare Pages mode: `/api/export`
+
+Suggested routine:
+
+1. Download a backup before major monitor changes.
+2. Download another backup after adding or removing many targets.
+3. Store a copy outside the running machine or Cloudflare account.
+
+## Rotate dashboard credentials
+
+Local Node mode:
+
+1. Edit `.local.env`
+2. Set new `MONITOR_USERNAME`
+3. Set new `MONITOR_PASSWORD`
+4. Restart the local server
+
+Cloudflare Pages:
+
+```bash
+npx wrangler pages secret put MONITOR_USERNAME --project-name structured-data
+npx wrangler pages secret put MONITOR_PASSWORD --project-name structured-data
+```
+
+Cloudflare scheduler worker:
+
+```bash
+npx wrangler secret put MONITOR_USERNAME --config wrangler.scheduler.jsonc
+npx wrangler secret put MONITOR_PASSWORD --config wrangler.scheduler.jsonc
+```
+
+After updating the secrets, redeploy Pages and the scheduler if needed.
+
 ## Main Cloudflare files
 
 - `public/_worker.js`

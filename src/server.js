@@ -117,6 +117,10 @@ async function getStatus() {
   };
 }
 
+function getBackupFilename() {
+  return `dom-metadata-monitor-backup-${new Date().toISOString().slice(0, 10)}.json`;
+}
+
 async function handleApi(request, response, pathname) {
   if (request.method === "GET" && pathname === "/api/status") {
     sendJson(response, 200, await getStatus());
@@ -130,6 +134,27 @@ async function handleApi(request, response, pathname) {
 
   if (request.method === "GET" && pathname === "/api/alerts") {
     sendJson(response, 200, await listAlerts());
+    return true;
+  }
+
+  if (request.method === "GET" && pathname === "/api/export") {
+    const exportedState = await storage.exportState();
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      runtime: monitor.getRuntimeStatus(),
+      storage: {
+        mode: "local-json",
+        path: storage.DB_PATH,
+      },
+      ...exportedState,
+    };
+
+    response.writeHead(200, addSecurityHeaders({
+      "Cache-Control": "no-store",
+      "Content-Disposition": `attachment; filename="${getBackupFilename()}"`,
+      "Content-Type": "application/json; charset=utf-8",
+    }));
+    response.end(JSON.stringify(payload, null, 2));
     return true;
   }
 

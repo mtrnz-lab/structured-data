@@ -11,6 +11,7 @@ const alertsList = document.querySelector("#alerts-list");
 const form = document.querySelector("#target-form");
 const feedback = document.querySelector("#form-feedback");
 const emptyStateTemplate = document.querySelector("#empty-state-template");
+const exportBackupButton = document.querySelector("#export-backup");
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -454,6 +455,12 @@ document.addEventListener("click", async (event) => {
   }
 
   try {
+    if (button === exportBackupButton) {
+      window.location.assign("/api/export");
+      feedback.textContent = "Backup download started.";
+      return;
+    }
+
     if (button.dataset.targetExpand) {
       state.expandedTargetId =
         state.expandedTargetId === button.dataset.targetExpand ? null : button.dataset.targetExpand;
