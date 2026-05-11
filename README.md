@@ -59,6 +59,7 @@ Ti servono:
 - un database D1
 - un API token Cloudflare con permesso `Browser Rendering - Edit`
 - l'`account_id` Cloudflare
+- credenziali per proteggere la dashboard: `MONITOR_USERNAME` e `MONITOR_PASSWORD`
 
 ## 1. Installa dipendenze
 
@@ -73,7 +74,13 @@ Crea un file `.dev.vars` partendo da `.dev.vars.example`:
 ```env
 CLOUDFLARE_ACCOUNT_ID=your_account_id
 BROWSER_RUN_API_TOKEN=your_browser_run_api_token
+MONITOR_USERNAME=admin
+MONITOR_PASSWORD=choose_a_long_random_password
 ```
+
+La dashboard e tutte le API sono protette con `Basic Auth`. Senza `MONITOR_USERNAME` e `MONITOR_PASSWORD` il servizio rifiuta le richieste.
+
+Per la modalita locale puoi creare anche `.local.env` partendo da `.local.env.example`.
 
 ## 3. Crea il database D1
 
@@ -119,6 +126,8 @@ Opzione consigliata:
 5. Aggiungi i secret:
    - `CLOUDFLARE_ACCOUNT_ID`
    - `BROWSER_RUN_API_TOKEN`
+   - `MONITOR_USERNAME`
+   - `MONITOR_PASSWORD`
 6. Deploya il progetto
 
 In alternativa via CLI:
@@ -141,6 +150,8 @@ Poi configura nel dashboard del Worker:
 
 - secret `CLOUDFLARE_ACCOUNT_ID`
 - secret `BROWSER_RUN_API_TOKEN`
+- secret `MONITOR_USERNAME`
+- secret `MONITOR_PASSWORD`
 - binding D1 `DB`
 
 Il cron di default e:
@@ -166,6 +177,8 @@ Se vuoi cambiare l'orario, modifica `wrangler.scheduler.jsonc`.
 - lo storage runtime non e piu su file JSON ma su D1
 - `data/db.json` resta escluso dal repo e serve solo alla modalita locale Node
 - il backend locale Node non e stato rimosso: puoi continuare a usare `localhost:4010`
+- gli endpoint accettano solo URL `http/https` e bloccano host locali o privati
+- la dashboard online e locale richiede autenticazione HTTP Basic
 
 ## File principali per Cloudflare
 
@@ -175,6 +188,5 @@ Se vuoi cambiare l'orario, modifica `wrangler.scheduler.jsonc`.
 - `cloudflare/shared/monitoring.mjs`
 - `workers/scheduler.mjs`
 - `migrations/001_init.sql`
-- `wrangler.pages.jsonc`
 - `wrangler.jsonc`
 - `wrangler.scheduler.jsonc`

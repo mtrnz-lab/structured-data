@@ -8,16 +8,14 @@ import {
   toggleTarget,
 } from "./shared/repository.mjs";
 import { addTargetAndQueueCheck, runTargetCheck } from "./shared/monitoring.mjs";
-
-function jsonResponse(payload, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    headers: {
-      "Cache-Control": "no-store",
-      "Content-Type": "application/json; charset=utf-8",
-    },
-    status,
-  });
-}
+import {
+  enforceWriteRateLimit,
+  jsonResponse,
+  requireBasicAuth,
+  validateLabel,
+  validateMonitorUrl,
+  withSecurityHeaders,
+} from "./shared/security.mjs";
 
 async function readJsonBody(request) {
   try {
@@ -42,14 +40,8 @@ async function handleApi(request, env, ctx, pathname) {
 
   if (request.method === "POST" && pathname === "/api/targets") {
     const body = await readJsonBody(request);
-    const url = String(body.url || "").trim();
-    const label = String(body.label || "").trim();
-
-    try {
-      new URL(url);
-    } catch {
-      return jsonResponse({ error: "Inserisci una URL valida." }, 400);
-    }
+    const url = validateMonitorUrl(body.url);
+    const label = validateLabel(body.label);
 
     const target = await addTargetAndQueueCheck(env, { label, url }, ctx);
     return jsonResponse(target, 201);
@@ -105,6 +97,18 @@ export default {
     const url = new URL(request.url);
 
     try {
+      const authResponse = requireBasicAuth(request, env);
+      if (authResponse) {
+        return authResponse;
+      }
+
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
+        const rateLimitResponse = enforceWriteRateLimit(request);
+        if (rateLimitResponse) {
+          return rateLimitResponse;
+        }
+      }
+
       if (url.pathname.startsWith("/api/")) {
         const response = await handleApi(request, env, ctx, url.pathname);
         if (response) {
@@ -114,7 +118,7 @@ export default {
         return jsonResponse({ error: "Endpoint non trovato." }, 404);
       }
 
-      return env.ASSETS.fetch(request);
+      return withSecurityHeaders(await env.ASSETS.fetch(request));
     } catch (error) {
       return jsonResponse({ error: error.message || "Errore inatteso." }, 500);
     }

@@ -11,6 +11,7 @@ import {
   updateAlert,
   updateRun,
 } from "./repository.mjs";
+import { readEnvString, validateMonitorUrl } from "./security.mjs";
 
 const MAX_ALERT_HISTORY = 200;
 const HTML_ENTITY_MAP = {
@@ -492,9 +493,10 @@ function extractSnapshotFromHtml(html, url) {
 }
 
 async function fetchRenderedHtml(env, url) {
-  const token = env.BROWSER_RUN_API_TOKEN;
-  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
-  const apiBase = env.BROWSER_RUN_API_BASE || "https://api.cloudflare.com/client/v4";
+  const safeUrl = validateMonitorUrl(url);
+  const token = readEnvString(env.BROWSER_RUN_API_TOKEN);
+  const accountId = readEnvString(env.CLOUDFLARE_ACCOUNT_ID);
+  const apiBase = readEnvString(env.BROWSER_RUN_API_BASE) || "https://api.cloudflare.com/client/v4";
 
   if (!token || !accountId) {
     throw new Error("Configura CLOUDFLARE_ACCOUNT_ID e BROWSER_RUN_API_TOKEN.");
@@ -508,10 +510,10 @@ async function fetchRenderedHtml(env, url) {
     },
     body: JSON.stringify({
       gotoOptions: {
-        timeout: Number(env.MONITOR_CHECK_TIMEOUT_MS || 45000),
+        timeout: Number(readEnvString(env.MONITOR_CHECK_TIMEOUT_MS) || 45000),
         waitUntil: "networkidle",
       },
-      url,
+      url: safeUrl,
     }),
   });
 

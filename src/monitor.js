@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { validateMonitorUrl } = require("./security");
 
 function loadPlaywright() {
   try {
@@ -325,7 +326,9 @@ function getDefaultLabel(urlString) {
 }
 
 async function extractSnapshot(page, target) {
-  await page.goto(target.url, {
+  const safeUrl = validateMonitorUrl(target.url);
+
+  await page.goto(safeUrl, {
     timeout: NAVIGATION_TIMEOUT_MS,
     waitUntil: "domcontentloaded",
   });

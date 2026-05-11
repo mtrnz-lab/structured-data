@@ -1,2 +1,4 @@
 CLOUDFLARE_ACCOUNT_ID=your_account_id
 BROWSER_RUN_API_TOKEN=your_browser_run_api_token
+MONITOR_USERNAME=admin
+MONITOR_PASSWORD=choose_a_long_random_password

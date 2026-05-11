@@ -5,6 +5,13 @@ const crypto = require("crypto");
 
 const storage = require("./storage");
 const { createMonitor } = require("./monitor");
+const {
+  addSecurityHeaders,
+  enforceWriteRateLimit,
+  requireBasicAuth,
+  validateLabel,
+  validateMonitorUrl,
+} = require("./security");
 
 const PORT = Number(process.env.PORT || 4010);
 const PUBLIC_DIR = path.join(process.cwd(), "public");
@@ -20,18 +27,18 @@ const MIME_TYPES = {
 };
 
 function sendJson(response, statusCode, payload) {
-  response.writeHead(statusCode, {
+  response.writeHead(statusCode, addSecurityHeaders({
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
-  });
+  }));
   response.end(JSON.stringify(payload));
 }
 
 function sendText(response, statusCode, payload) {
-  response.writeHead(statusCode, {
+  response.writeHead(statusCode, addSecurityHeaders({
     "Content-Type": "text/plain; charset=utf-8",
     "Cache-Control": "no-store",
-  });
+  }));
   response.end(payload);
 }
 
@@ -62,10 +69,10 @@ async function serveStatic(requestPath, response) {
   try {
     const data = await fs.readFile(resolvedPath);
     const extension = path.extname(resolvedPath);
-    response.writeHead(200, {
+    response.writeHead(200, addSecurityHeaders({
       "Content-Type": MIME_TYPES[extension] || "application/octet-stream",
       "Cache-Control": extension === ".html" ? "no-store" : "public, max-age=300",
-    });
+    }));
     response.end(data);
   } catch {
     sendText(response, 404, "Not found");
@@ -128,15 +135,8 @@ async function handleApi(request, response, pathname) {
 
   if (request.method === "POST" && pathname === "/api/targets") {
     const body = await readBody(request);
-    const url = String(body.url || "").trim();
-    const label = String(body.label || "").trim();
-
-    try {
-      new URL(url);
-    } catch {
-      sendJson(response, 400, { error: "Inserisci una URL valida." });
-      return true;
-    }
+    const url = validateMonitorUrl(body.url);
+    const label = validateLabel(body.label);
 
     const target = await storage.withState((state) => {
       const existing = state.targets.find((entry) => entry.url === url);
@@ -287,6 +287,22 @@ async function bootstrap() {
     const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);
 
     try {
+      const authChallenge = requireBasicAuth(request);
+      if (authChallenge) {
+        response.writeHead(authChallenge.statusCode, authChallenge.headers);
+        response.end(authChallenge.payload);
+        return;
+      }
+
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method || "")) {
+        const rateLimit = enforceWriteRateLimit(request);
+        if (rateLimit) {
+          response.writeHead(rateLimit.statusCode, rateLimit.headers);
+          response.end(rateLimit.payload);
+          return;
+        }
+      }
+
       const handled = await handleApi(request, response, url.pathname);
 
       if (handled) {

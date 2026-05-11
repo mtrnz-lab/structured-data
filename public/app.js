@@ -29,6 +29,23 @@ function truncateText(value, maxLength = 180) {
   return value.length > maxLength ? `${value.slice(0, maxLength - 3)}...` : value;
 }
 
+function escapeHtmlList(values) {
+  return (values || []).map((value) => escapeHtml(value));
+}
+
+function isSafeHttpUrl(value) {
+  try {
+    const parsed = new URL(String(value || ""));
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function safeExternalHref(value) {
+  return isSafeHttpUrl(value) ? value : "#";
+}
+
 function fullscreenIcon(expanded) {
   if (expanded) {
     return `
@@ -209,21 +226,24 @@ function renderAlerts() {
   for (const alert of openAlerts) {
     const article = document.createElement("article");
     article.className = "alert-card";
+    const detailMarkup = escapeHtmlList((alert.details || []).slice(0, 5))
+      .map((detail) => `<li>${detail}</li>`)
+      .join("");
     article.innerHTML = `
       <div class="alert-top">
         <div>
           <p class="eyebrow">${alert.type === "error" ? "Errore" : "Variazione rilevata"}</p>
-          <h3>${alert.targetLabel}</h3>
+          <h3>${escapeHtml(alert.targetLabel)}</h3>
         </div>
-        <span class="${chipClass("changed")}">${alert.type}</span>
+        <span class="${chipClass("changed")}">${escapeHtml(alert.type)}</span>
       </div>
-      <p>${alert.summary}</p>
-      <p class="mini">${alert.targetUrl}</p>
+      <p>${escapeHtml(alert.summary)}</p>
+      <p class="mini">${escapeHtml(alert.targetUrl)}</p>
       <p class="mini">Creato: ${formatDate(alert.createdAt)}</p>
       <ul class="detail-list">
-        ${(alert.details || []).slice(0, 5).map((detail) => `<li>${detail}</li>`).join("")}
+        ${detailMarkup}
       </ul>
-      <button data-alert-ack="${alert.id}">Segna come letto</button>
+      <button data-alert-ack="${escapeHtml(alert.id)}">Segna come letto</button>
     `;
     alertsList.appendChild(article);
   }
@@ -286,7 +306,7 @@ function renderTargets() {
       </div>
 
       <p class="target-url">
-        <a href="${escapeHtml(target.url)}" target="_blank" rel="noopener noreferrer">
+        <a href="${escapeHtml(safeExternalHref(target.url))}" target="_blank" rel="noopener noreferrer">
           ${escapeHtml(target.url)}
         </a>
       </p>
@@ -322,7 +342,7 @@ function renderTargets() {
         </div>
       </details>
 
-      ${warnings.length ? `<div class="warning-box">${warnings.join("<br />")}</div>` : ""}
+      ${warnings.length ? `<div class="warning-box">${escapeHtmlList(warnings).join("<br />")}</div>` : ""}
 
       ${
         recentRun

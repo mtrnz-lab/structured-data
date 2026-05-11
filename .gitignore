@@ -4,3 +4,4 @@ data/*.tmp
 .wrangler/
 .dev.vars
 .wrangler-pages-dev*.log
+.local.env
