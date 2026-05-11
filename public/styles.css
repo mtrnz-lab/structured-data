@@ -456,7 +456,8 @@ button.ghost {
 }
 
 .target-card-scroll {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
   min-height: 0;
   padding-bottom: 2px;
@@ -498,6 +499,7 @@ button.ghost {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 0 16px 16px;
+  align-content: start;
 }
 
 .detail-panel {
@@ -618,6 +620,32 @@ button.ghost {
   scrollbar-gutter: stable both-edges;
   padding-right: 10px;
   padding-bottom: calc(18px + env(safe-area-inset-bottom));
+}
+
+.target-card.is-expanded .details-drawer {
+  flex: 0 0 auto;
+}
+
+.target-card.is-expanded .details-drawer[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 280px;
+  max-height: min(58vh, 720px);
+}
+
+.target-card.is-expanded .details-drawer[open] summary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(4, 18, 32, 0.98), rgba(4, 18, 32, 0.9));
+}
+
+.target-card.is-expanded .details-drawer[open] .details-grid {
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 18px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
 }
 
 .chip {
