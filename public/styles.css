@@ -201,6 +201,12 @@ button.ghost {
   padding: 20px;
 }
 
+.target-card-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .target-head,
 .alert-top {
   display: flex;
@@ -256,7 +262,13 @@ button.ghost {
   padding: 14px;
   border-radius: 16px;
   background: rgba(36, 94, 139, 0.06);
-  margin-bottom: 14px;
+}
+
+.target-card-scroll {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+  padding-bottom: 2px;
 }
 
 .details-drawer {
@@ -376,16 +388,38 @@ button.ghost {
     100dvh - max(24px, calc(env(safe-area-inset-top) + env(safe-area-inset-bottom)))
   );
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable both-edges;
+  display: flex;
+  overflow: hidden;
   padding: 24px 24px calc(28px + env(safe-area-inset-bottom));
   background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(245, 238, 226, 0.98));
   box-shadow:
     0 0 0 100vmax rgba(13, 22, 21, 0.45),
     0 18px 45px rgba(11, 36, 35, 0.18);
+}
+
+.target-card.is-expanded .target-card-shell {
+  flex: 1;
+  min-height: 0;
+}
+
+.target-card.is-expanded .target-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 14px;
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(255, 252, 247, 0.94));
+}
+
+.target-card.is-expanded .target-card-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+  padding-right: 8px;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom));
 }
 
 .chip {

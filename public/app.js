@@ -46,6 +46,22 @@ function safeExternalHref(value) {
   return isSafeHttpUrl(value) ? value : "#";
 }
 
+function normalizeMonitorUrlInput(value) {
+  const raw = String(value || "").trim();
+
+  if (!raw) {
+    throw new Error("Enter a URL to monitor.");
+  }
+
+  const candidate = /^[a-z][a-z\d+\-.]*:\/\//i.test(raw) ? raw : `https://${raw}`;
+
+  if (!isSafeHttpUrl(candidate)) {
+    throw new Error("Enter a valid http or https URL.");
+  }
+
+  return candidate;
+}
+
 function fullscreenIcon(expanded) {
   if (expanded) {
     return `
@@ -287,76 +303,80 @@ function renderTargets() {
     card.dataset.targetCard = target.id;
 
     card.innerHTML = `
-      <div class="target-head">
-        <div class="target-title-wrap">
-          <p class="eyebrow">URL Monitoring</p>
-          <h3>${escapeHtml(target.label)}</h3>
+      <div class="target-card-shell">
+        <div class="target-head">
+          <div class="target-title-wrap">
+            <p class="eyebrow">URL Monitoring</p>
+            <h3>${escapeHtml(target.label)}</h3>
+          </div>
+          <div class="target-head-actions">
+            <button
+              class="secondary compact-button icon-button"
+              data-target-expand="${target.id}"
+              aria-label="${isExpanded ? "Collapse card" : "Open card in fullscreen"}"
+              title="${isExpanded ? "Collapse" : "Fullscreen"}"
+            >
+              ${fullscreenIcon(isExpanded)}
+            </button>
+            <span class="${chipClass(target.status)}">${escapeHtml(target.status)}</span>
+          </div>
         </div>
-        <div class="target-head-actions">
-          <button
-            class="secondary compact-button icon-button"
-            data-target-expand="${target.id}"
-            aria-label="${isExpanded ? "Collapse card" : "Open card in fullscreen"}"
-            title="${isExpanded ? "Collapse" : "Fullscreen"}"
-          >
-            ${fullscreenIcon(isExpanded)}
-          </button>
-          <span class="${chipClass(target.status)}">${escapeHtml(target.status)}</span>
+
+        <div class="target-card-scroll">
+          <p class="target-url">
+            <a href="${escapeHtml(safeExternalHref(target.url))}" target="_blank" rel="noopener noreferrer">
+              ${escapeHtml(target.url)}
+            </a>
+          </p>
+
+          <div class="stats">
+            <span>Last check: <strong>${formatDate(target.lastCheckAt)}</strong></span>
+            <span>Open alerts: <strong>${target.openAlerts}</strong></span>
+            <span>Baseline: <strong>${target.baselineSnapshot ? "available" : "not created yet"}</strong></span>
+          </div>
+
+          <div class="snapshot-box">
+            <p><strong>Title:</strong> ${escapeHtml(summary?.title || "n/a")}</p>
+            <p><strong>Canonical:</strong> ${escapeHtml(summary?.canonical || "n/a")}</p>
+            <p><strong>Meta keys:</strong> ${summary?.metaCount ?? 0}</p>
+            <p><strong>JSON-LD blocks:</strong> ${summary?.jsonLdCount ?? 0}</p>
+          </div>
+
+          <details class="details-drawer">
+            <summary>Metadata and structured data details</summary>
+            <div class="details-grid">
+              <section class="detail-panel">
+                <h4>Detected product description</h4>
+                <p>${escapeHtml(truncateText(productDescription, 260) || "n/a")}</p>
+              </section>
+              <section class="detail-panel">
+                <h4>Alternate tags</h4>
+                ${alternateMarkup}
+              </section>
+              <section class="detail-panel detail-panel-wide">
+                <h4>Structured data found</h4>
+                ${structuredMarkup}
+              </section>
+            </div>
+          </details>
+
+          ${warnings.length ? `<div class="warning-box">${escapeHtmlList(warnings).join("<br />")}</div>` : ""}
+
+          ${
+            recentRun
+              ? `<p class="mini">Latest result: ${escapeHtml(recentRun.summary)} (${formatDate(recentRun.finishedAt || recentRun.startedAt)})</p>`
+              : ""
+          }
+
+          <div class="actions">
+            <button data-target-check="${target.id}">Run check</button>
+            <button class="secondary" data-target-baseline="${target.id}">Accept current baseline</button>
+            <button class="secondary" data-target-toggle="${target.id}">
+              ${target.active ? "Pause" : "Resume"}
+            </button>
+            <button class="ghost" data-target-delete="${target.id}">Remove</button>
+          </div>
         </div>
-      </div>
-
-      <p class="target-url">
-        <a href="${escapeHtml(safeExternalHref(target.url))}" target="_blank" rel="noopener noreferrer">
-          ${escapeHtml(target.url)}
-        </a>
-      </p>
-
-      <div class="stats">
-        <span>Last check: <strong>${formatDate(target.lastCheckAt)}</strong></span>
-        <span>Open alerts: <strong>${target.openAlerts}</strong></span>
-        <span>Baseline: <strong>${target.baselineSnapshot ? "available" : "not created yet"}</strong></span>
-      </div>
-
-      <div class="snapshot-box">
-        <p><strong>Title:</strong> ${escapeHtml(summary?.title || "n/a")}</p>
-        <p><strong>Canonical:</strong> ${escapeHtml(summary?.canonical || "n/a")}</p>
-        <p><strong>Meta keys:</strong> ${summary?.metaCount ?? 0}</p>
-        <p><strong>JSON-LD blocks:</strong> ${summary?.jsonLdCount ?? 0}</p>
-      </div>
-
-      <details class="details-drawer">
-        <summary>Metadata and structured data details</summary>
-        <div class="details-grid">
-          <section class="detail-panel">
-            <h4>Detected product description</h4>
-            <p>${escapeHtml(truncateText(productDescription, 260) || "n/a")}</p>
-          </section>
-          <section class="detail-panel">
-            <h4>Alternate tags</h4>
-            ${alternateMarkup}
-          </section>
-          <section class="detail-panel detail-panel-wide">
-            <h4>Structured data found</h4>
-            ${structuredMarkup}
-          </section>
-        </div>
-      </details>
-
-      ${warnings.length ? `<div class="warning-box">${escapeHtmlList(warnings).join("<br />")}</div>` : ""}
-
-      ${
-        recentRun
-          ? `<p class="mini">Latest result: ${escapeHtml(recentRun.summary)} (${formatDate(recentRun.finishedAt || recentRun.startedAt)})</p>`
-          : ""
-      }
-
-      <div class="actions">
-        <button data-target-check="${target.id}">Run check</button>
-        <button class="secondary" data-target-baseline="${target.id}">Accept current baseline</button>
-        <button class="secondary" data-target-toggle="${target.id}">
-          ${target.active ? "Pause" : "Resume"}
-        </button>
-        <button class="ghost" data-target-delete="${target.id}">Remove</button>
       </div>
     `;
 
@@ -388,6 +408,9 @@ form.addEventListener("submit", async (event) => {
   const payload = Object.fromEntries(formData.entries());
 
   try {
+    payload.url = normalizeMonitorUrlInput(payload.url);
+    payload.label = String(payload.label || "").trim();
+
     await api("/api/targets", {
       body: JSON.stringify(payload),
       method: "POST",
