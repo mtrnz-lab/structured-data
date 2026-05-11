@@ -104,6 +104,22 @@ function getSnapshotView(target) {
   return target.lastSnapshot || target.baselineSnapshot || null;
 }
 
+function getBaselineActionLabel(target) {
+  if (!target.lastSnapshot) {
+    return target.status === "running" ? "Waiting for snapshot" : "Queue first snapshot";
+  }
+
+  if (!target.baselineSnapshot) {
+    return "Create baseline";
+  }
+
+  if (target.lastSnapshot.fingerprint !== target.baselineSnapshot.fingerprint) {
+    return "Accept latest snapshot";
+  }
+
+  return "Refresh current baseline";
+}
+
 function getDerivedProductDescription(snapshotView, summary) {
   if (summary?.productDescription) {
     return summary.productDescription;
@@ -283,6 +299,7 @@ function renderTargets() {
     const alternateTags = getDerivedAlternates(snapshotView, summary).filter((item) =>
       (item.rel || "").includes("alternate")
     );
+    const baselineActionLabel = getBaselineActionLabel(target);
     const structuredDataTypes = getDerivedStructuredDataTypes(snapshotView, summary);
     const productDescription = getDerivedProductDescription(snapshotView, summary) || "n/a";
     const alternateMarkup = alternateTags.length
@@ -370,7 +387,9 @@ function renderTargets() {
 
           <div class="actions">
             <button data-target-check="${target.id}">Run check</button>
-            <button class="secondary" data-target-baseline="${target.id}">Accept current baseline</button>
+            <button class="secondary" data-target-baseline="${target.id}">${escapeHtml(
+              baselineActionLabel
+            )}</button>
             <button class="secondary" data-target-toggle="${target.id}">
               ${target.active ? "Pause" : "Resume"}
             </button>
