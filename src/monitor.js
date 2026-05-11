@@ -245,7 +245,7 @@ function compareGroupedEntries(label, baselineEntries, currentEntries) {
     const after = JSON.stringify(currentMap.get(key) || []);
 
     if (before !== after) {
-      changes.push(`${label} "${key}" cambiato.`);
+      changes.push(`${label} "${key}" changed.`);
     }
   }
 
@@ -257,7 +257,7 @@ function compareArrayAsSet(label, baselineItems, currentItems) {
   const after = uniqSorted((currentItems || []).map((item) => stableStringify(item)));
 
   if (JSON.stringify(before) !== JSON.stringify(after)) {
-    return [`${label} cambiato.`];
+    return [`${label} changed.`];
   }
 
   return [];
@@ -274,7 +274,7 @@ function compareVisibilityChecks(baselineChecks, currentChecks) {
     const after = Boolean(currentChecks?.[key]);
 
     if (before !== after) {
-      changes.push(`Controllo di visibilita "${key}" cambiato da ${before} a ${after}.`);
+      changes.push(`Visibility check "${key}" changed from ${before} to ${after}.`);
     }
   }
 
@@ -285,11 +285,11 @@ function diffSnapshots(baselineSnapshot, currentSnapshot) {
   const changes = [];
 
   if ((baselineSnapshot.title || "") !== (currentSnapshot.title || "")) {
-    changes.push("Title cambiato.");
+    changes.push("Title changed.");
   }
 
   if ((baselineSnapshot.canonical || "") !== (currentSnapshot.canonical || "")) {
-    changes.push("Canonical cambiata.");
+    changes.push("Canonical changed.");
   }
 
   changes.push(...compareGroupedEntries("Meta", baselineSnapshot.meta || [], currentSnapshot.meta || []));
@@ -297,8 +297,8 @@ function diffSnapshots(baselineSnapshot, currentSnapshot) {
     ...compareGroupedEntries("Microdata", baselineSnapshot.microdata || [], currentSnapshot.microdata || [])
   );
   changes.push(...compareGroupedEntries("RDFa", baselineSnapshot.rdfa || [], currentSnapshot.rdfa || []));
-  changes.push(...compareArrayAsSet("Tag alternate", baselineSnapshot.alternates || [], currentSnapshot.alternates || []));
-  changes.push(...compareArrayAsSet("Blocchi JSON-LD", baselineSnapshot.jsonLd || [], currentSnapshot.jsonLd || []));
+  changes.push(...compareArrayAsSet("Alternate tags", baselineSnapshot.alternates || [], currentSnapshot.alternates || []));
+  changes.push(...compareArrayAsSet("JSON-LD blocks", baselineSnapshot.jsonLd || [], currentSnapshot.jsonLd || []));
   changes.push(
     ...compareVisibilityChecks(
       baselineSnapshot.visibilityChecks || {},
@@ -307,7 +307,7 @@ function diffSnapshots(baselineSnapshot, currentSnapshot) {
   );
 
   if (JSON.stringify(baselineSnapshot.warnings || []) !== JSON.stringify(currentSnapshot.warnings || [])) {
-    changes.push("Warnings tecnici cambiati.");
+    changes.push("Technical warnings changed.");
   }
 
   const changed = changes.length > 0;
@@ -315,7 +315,7 @@ function diffSnapshots(baselineSnapshot, currentSnapshot) {
   return {
     changed,
     changes,
-    summary: changed ? changes[0] : "Nessuna variazione rispetto alla baseline.",
+    summary: changed ? changes[0] : "No changes compared with the baseline.",
   };
 }
 
@@ -336,7 +336,7 @@ async function extractSnapshot(page, target) {
   try {
     await page.waitForLoadState("networkidle", { timeout: 7_500 });
   } catch {
-    // Alcune pagine non raggiungono mai networkidle: in quel caso lavoriamo comunque sul DOM corrente.
+    // Some pages never reach networkidle; in that case we still work with the current DOM.
   }
 
   const rawSnapshot = await page.evaluate(() => {
@@ -495,11 +495,11 @@ async function extractSnapshot(page, target) {
     ]);
 
     if (meta.some((item) => item.location !== "head")) {
-      warnings.push("Sono presenti meta tag fuori dal <head>.");
+      warnings.push("Meta tags were found outside the <head>.");
     }
 
     if (jsonLd.some((item) => !item.validJson)) {
-      warnings.push("Uno o piu blocchi JSON-LD non sono parseabili.");
+      warnings.push("One or more JSON-LD blocks could not be parsed.");
     }
 
     return {
@@ -636,7 +636,7 @@ function createMonitor(storage) {
         const target = state.targets.find((entry) => entry.id === targetId);
 
         if (!target) {
-          throw new Error("Target non trovato.");
+          throw new Error("Target not found.");
         }
 
         target.status = "running";
@@ -647,7 +647,7 @@ function createMonitor(storage) {
           id: runId,
           startedAt: toIsoNow(),
           status: "running",
-          summary: "Controllo avviato.",
+          summary: "Check started.",
           targetId: target.id,
           targetLabel: target.label,
           targetUrl: target.url,
@@ -664,7 +664,7 @@ function createMonitor(storage) {
         const target = state.targets.find((entry) => entry.id === targetId);
 
         if (!target) {
-          throw new Error("Target rimosso prima del controllo.");
+          throw new Error("Target was removed before the check started.");
         }
 
         targetSnapshot = await extractSnapshot(page, target);
@@ -673,7 +673,7 @@ function createMonitor(storage) {
           const targetInState = draft.targets.find((entry) => entry.id === targetId);
 
           if (!targetInState) {
-            throw new Error("Target non trovato durante il salvataggio.");
+            throw new Error("Target not found while saving the result.");
           }
 
           const baseline = targetInState.baselineSnapshot;
@@ -699,7 +699,7 @@ function createMonitor(storage) {
             markRun(draft, runId, {
               finishedAt: now,
               status: "baseline",
-              summary: "Baseline creata con il primo snapshot valido.",
+              summary: "Baseline created from the first valid snapshot.",
             });
 
             return;
@@ -716,7 +716,7 @@ function createMonitor(storage) {
             finishedAt: now,
             snapshotFingerprint: targetSnapshot.fingerprint,
             status: changed ? "changed" : "ok",
-            summary: changed ? diff.summary : "Nessuna differenza rispetto alla baseline.",
+            summary: changed ? diff.summary : "No differences compared with the baseline.",
           });
 
           if (changed) {
@@ -730,7 +730,7 @@ function createMonitor(storage) {
                 summary:
                   diff.summary ||
                   targetSnapshot.normalized.warnings[0] ||
-                  "Sono state rilevate differenze rispetto alla baseline.",
+                  "Differences were detected compared with the baseline.",
                 target: targetInState,
                 type: "diff",
               })
@@ -761,7 +761,7 @@ function createMonitor(storage) {
               details: [error.message],
               runId,
               signature: `error:${error.message}`,
-              summary: "Errore durante il controllo della pagina.",
+              summary: "Error while checking the page.",
               target,
               type: "error",
             })
@@ -772,7 +772,7 @@ function createMonitor(storage) {
           error: error.message,
           finishedAt: toIsoNow(),
           status: "error",
-          summary: "Il controllo e terminato con errore.",
+          summary: "The check finished with an error.",
         });
       });
 
@@ -787,7 +787,7 @@ function createMonitor(storage) {
 
   async function queueTargetCheck(targetId) {
     void runTargetCheck(targetId).catch((error) => {
-      console.error(`Errore nel check del target ${targetId}:`, error.message);
+      console.error(`Error while checking target ${targetId}:`, error.message);
     });
     return { queued: true };
   }

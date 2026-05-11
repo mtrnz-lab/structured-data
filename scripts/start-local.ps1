@@ -5,7 +5,7 @@ $nodeModules = Join-Path $runtimeRoot "node_modules"
 $localEnvPath = Join-Path $projectRoot ".local.env"
 
 if (-not (Test-Path $nodePath)) {
-  Write-Error "Node runtime bundled non trovato in $nodePath"
+  Write-Error "Bundled Node runtime not found at $nodePath"
   exit 1
 }
 

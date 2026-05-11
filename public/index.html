@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,11 +10,11 @@
     <div class="shell">
       <header class="hero">
         <div>
-          <p class="eyebrow">Controllo SEO tecnico</p>
-          <h1>Dashboard monitoraggio DOM, metadata e dati strutturati</h1>
+          <p class="eyebrow">Technical SEO Monitoring</p>
+          <h1>DOM, metadata, and structured data monitoring dashboard</h1>
           <p class="lede">
-            Ogni URL viene controllata ogni 24 ore. Il sistema salva una baseline, confronta i
-            metadati e i dati strutturati renderizzati e segnala gli scostamenti.
+            Each URL is checked every 24 hours. The system stores a baseline, compares rendered
+            metadata and structured data, and highlights any differences.
           </p>
         </div>
         <div class="hero-card" id="status-cards"></div>
@@ -23,22 +23,22 @@
       <main class="grid">
         <section class="panel">
           <div class="panel-head">
-            <h2>Aggiungi URL</h2>
-            <p>Inserimento manuale e avvio automatico del primo check.</p>
+            <h2>Add URL</h2>
+            <p>Manual input with the first check queued automatically.</p>
           </div>
 
           <form id="target-form" class="stack">
             <label>
               <span>URL</span>
-              <input id="url" name="url" type="url" placeholder="https://www.esempio.it/pagina" required />
+              <input id="url" name="url" type="url" placeholder="https://www.example.com/page" required />
             </label>
 
             <label>
-              <span>Etichetta</span>
-              <input id="label" name="label" type="text" placeholder="Homepage Italia" />
+              <span>Label</span>
+              <input id="label" name="label" type="text" placeholder="UK homepage" />
             </label>
 
-            <button type="submit">Aggiungi e monitora</button>
+            <button type="submit">Add and monitor</button>
           </form>
 
           <p class="hint" id="form-feedback"></p>
@@ -46,16 +46,16 @@
 
         <section class="panel">
           <div class="panel-head">
-            <h2>Alert aperti</h2>
-            <p>Notifiche generate quando qualcosa cambia nel codice o nei controlli di visibilita.</p>
+            <h2>Open alerts</h2>
+            <p>Notifications generated when code or visibility checks change.</p>
           </div>
           <div id="alerts-list" class="stack"></div>
         </section>
 
         <section class="panel panel-wide">
           <div class="panel-head">
-            <h2>URL monitorate</h2>
-            <p>Stato corrente, ultima scansione, baseline e comandi rapidi.</p>
+            <h2>Monitored URLs</h2>
+            <p>Current status, latest scan, baseline, and quick actions.</p>
           </div>
           <div id="targets-list" class="card-grid"></div>
         </section>
@@ -68,7 +68,7 @@
 
     <template id="empty-state-template">
       <div class="empty-state">
-        <p>Nessun elemento disponibile per ora.</p>
+        <p>No items available yet.</p>
       </div>
     </template>
 

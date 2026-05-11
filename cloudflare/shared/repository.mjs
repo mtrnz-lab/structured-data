@@ -133,7 +133,7 @@ export async function createTarget(env, { label, url, defaultLabel }) {
   const existing = await queryFirst(env, "SELECT id FROM targets WHERE url = ?", [url]);
 
   if (existing) {
-    throw new Error("Questa URL e gia monitorata.");
+    throw new Error("This URL is already being monitored.");
   }
 
   const createdAt = getNowIso();
@@ -354,7 +354,7 @@ export async function ackAlert(env, alertId) {
   const existing = await queryFirst(env, "SELECT * FROM alerts WHERE id = ?", [alertId]);
 
   if (!existing) {
-    throw new Error("Alert non trovato.");
+    throw new Error("Alert not found.");
   }
 
   await updateAlert(env, alertId, {
@@ -376,7 +376,7 @@ export async function toggleTarget(env, targetId) {
   const target = await getTargetById(env, targetId);
 
   if (!target) {
-    throw new Error("Target non trovato.");
+    throw new Error("Target not found.");
   }
 
   const updatedAt = getNowIso();
@@ -404,7 +404,7 @@ export async function resetBaseline(env, targetId) {
   const target = await getTargetById(env, targetId);
 
   if (!target) {
-    throw new Error("Target non trovato.");
+    throw new Error("Target not found.");
   }
 
   const updatedAt = getNowIso();

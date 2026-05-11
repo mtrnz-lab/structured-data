@@ -153,7 +153,7 @@ async function api(path, options = {}) {
   const payload = await response.json();
 
   if (!response.ok) {
-    throw new Error(payload.error || "Richiesta fallita.");
+    throw new Error(payload.error || "Request failed.");
   }
 
   return payload;
@@ -161,10 +161,10 @@ async function api(path, options = {}) {
 
 function formatDate(value) {
   if (!value) {
-    return "mai";
+    return "never";
   }
 
-  return new Intl.DateTimeFormat("it-IT", {
+  return new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
@@ -195,20 +195,20 @@ function renderStatus() {
 
   statusCards.innerHTML = `
     <article>
-      <span>URL monitorate</span>
+      <span>Monitored URLs</span>
       <strong>${state.status.totalTargets}</strong>
     </article>
     <article>
-      <span>Alert aperti</span>
+      <span>Open alerts</span>
       <strong>${state.status.openAlerts}</strong>
     </article>
     <article>
-      <span>Target changed</span>
+      <span>Changed targets</span>
       <strong>${state.status.changedTargets}</strong>
     </article>
     <article>
-      <span>Ultimo sweep</span>
-      <strong>${runtime.lastSweepAt ? formatDate(runtime.lastSweepAt) : "in attesa"}</strong>
+      <span>Last sweep</span>
+      <strong>${runtime.lastSweepAt ? formatDate(runtime.lastSweepAt) : "pending"}</strong>
     </article>
   `;
 }
@@ -232,18 +232,18 @@ function renderAlerts() {
     article.innerHTML = `
       <div class="alert-top">
         <div>
-          <p class="eyebrow">${alert.type === "error" ? "Errore" : "Variazione rilevata"}</p>
+          <p class="eyebrow">${alert.type === "error" ? "Error" : "Change detected"}</p>
           <h3>${escapeHtml(alert.targetLabel)}</h3>
         </div>
         <span class="${chipClass("changed")}">${escapeHtml(alert.type)}</span>
       </div>
       <p>${escapeHtml(alert.summary)}</p>
       <p class="mini">${escapeHtml(alert.targetUrl)}</p>
-      <p class="mini">Creato: ${formatDate(alert.createdAt)}</p>
+      <p class="mini">Created: ${formatDate(alert.createdAt)}</p>
       <ul class="detail-list">
         ${detailMarkup}
       </ul>
-      <button data-alert-ack="${escapeHtml(alert.id)}">Segna come letto</button>
+      <button data-alert-ack="${escapeHtml(alert.id)}">Mark as read</button>
     `;
     alertsList.appendChild(article);
   }
@@ -268,20 +268,20 @@ function renderTargets() {
       (item.rel || "").includes("alternate")
     );
     const structuredDataTypes = getDerivedStructuredDataTypes(snapshotView, summary);
-    const productDescription = getDerivedProductDescription(snapshotView, summary) || "n/d";
+    const productDescription = getDerivedProductDescription(snapshotView, summary) || "n/a";
     const alternateMarkup = alternateTags.length
       ? `<ul class="detail-bullets">${alternateTags
           .map(
             (item) =>
-              `<li><strong>${escapeHtml(item.hreflang || "default")}</strong>: ${escapeHtml(item.href || "n/d")}</li>`
+              `<li><strong>${escapeHtml(item.hreflang || "default")}</strong>: ${escapeHtml(item.href || "n/a")}</li>`
           )
           .join("")}</ul>`
-      : `<p class="mini">Nessun tag alternate rilevato.</p>`;
+      : `<p class="mini">No alternate tags detected.</p>`;
     const structuredMarkup = structuredDataTypes.length
       ? `<div class="tag-list">${structuredDataTypes
           .map((type) => `<span class="mini-chip">${escapeHtml(type)}</span>`)
           .join("")}</div>`
-      : `<p class="mini">Nessun dato strutturato rilevato.</p>`;
+      : `<p class="mini">No structured data detected.</p>`;
 
     card.className = `target-card${isExpanded ? " is-expanded" : ""}`;
     card.dataset.targetCard = target.id;
@@ -289,15 +289,15 @@ function renderTargets() {
     card.innerHTML = `
       <div class="target-head">
         <div class="target-title-wrap">
-          <p class="eyebrow">Monitoraggio URL</p>
+          <p class="eyebrow">URL Monitoring</p>
           <h3>${escapeHtml(target.label)}</h3>
         </div>
         <div class="target-head-actions">
           <button
             class="secondary compact-button icon-button"
             data-target-expand="${target.id}"
-            aria-label="${isExpanded ? "Riduci scheda" : "Apri scheda a schermo intero"}"
-            title="${isExpanded ? "Riduci" : "Schermo intero"}"
+            aria-label="${isExpanded ? "Collapse card" : "Open card in fullscreen"}"
+            title="${isExpanded ? "Collapse" : "Fullscreen"}"
           >
             ${fullscreenIcon(isExpanded)}
           </button>
@@ -312,31 +312,31 @@ function renderTargets() {
       </p>
 
       <div class="stats">
-        <span>Ultimo check: <strong>${formatDate(target.lastCheckAt)}</strong></span>
-        <span>Alert aperti: <strong>${target.openAlerts}</strong></span>
-        <span>Baseline: <strong>${target.baselineSnapshot ? "presente" : "da creare"}</strong></span>
+        <span>Last check: <strong>${formatDate(target.lastCheckAt)}</strong></span>
+        <span>Open alerts: <strong>${target.openAlerts}</strong></span>
+        <span>Baseline: <strong>${target.baselineSnapshot ? "available" : "not created yet"}</strong></span>
       </div>
 
       <div class="snapshot-box">
-        <p><strong>Title:</strong> ${escapeHtml(summary?.title || "n/d")}</p>
-        <p><strong>Canonical:</strong> ${escapeHtml(summary?.canonical || "n/d")}</p>
-        <p><strong>Meta key:</strong> ${summary?.metaCount ?? 0}</p>
-        <p><strong>JSON-LD:</strong> ${summary?.jsonLdCount ?? 0}</p>
+        <p><strong>Title:</strong> ${escapeHtml(summary?.title || "n/a")}</p>
+        <p><strong>Canonical:</strong> ${escapeHtml(summary?.canonical || "n/a")}</p>
+        <p><strong>Meta keys:</strong> ${summary?.metaCount ?? 0}</p>
+        <p><strong>JSON-LD blocks:</strong> ${summary?.jsonLdCount ?? 0}</p>
       </div>
 
       <details class="details-drawer">
-        <summary>Dettagli metadata e structured data</summary>
+        <summary>Metadata and structured data details</summary>
         <div class="details-grid">
           <section class="detail-panel">
-            <h4>Product description identificata</h4>
-            <p>${escapeHtml(truncateText(productDescription, 260) || "n/d")}</p>
+            <h4>Detected product description</h4>
+            <p>${escapeHtml(truncateText(productDescription, 260) || "n/a")}</p>
           </section>
           <section class="detail-panel">
-            <h4>Alternate tag</h4>
+            <h4>Alternate tags</h4>
             ${alternateMarkup}
           </section>
           <section class="detail-panel detail-panel-wide">
-            <h4>Dati strutturati trovati</h4>
+            <h4>Structured data found</h4>
             ${structuredMarkup}
           </section>
         </div>
@@ -346,17 +346,17 @@ function renderTargets() {
 
       ${
         recentRun
-          ? `<p class="mini">Ultimo esito: ${escapeHtml(recentRun.summary)} (${formatDate(recentRun.finishedAt || recentRun.startedAt)})</p>`
+          ? `<p class="mini">Latest result: ${escapeHtml(recentRun.summary)} (${formatDate(recentRun.finishedAt || recentRun.startedAt)})</p>`
           : ""
       }
 
       <div class="actions">
-        <button data-target-check="${target.id}">Lancia check</button>
-        <button class="secondary" data-target-baseline="${target.id}">Accetta baseline corrente</button>
+        <button data-target-check="${target.id}">Run check</button>
+        <button class="secondary" data-target-baseline="${target.id}">Accept current baseline</button>
         <button class="secondary" data-target-toggle="${target.id}">
-          ${target.active ? "Metti in pausa" : "Riattiva"}
+          ${target.active ? "Pause" : "Resume"}
         </button>
-        <button class="ghost" data-target-delete="${target.id}">Rimuovi</button>
+        <button class="ghost" data-target-delete="${target.id}">Remove</button>
       </div>
     `;
 
@@ -393,7 +393,7 @@ form.addEventListener("submit", async (event) => {
       method: "POST",
     });
     form.reset();
-    feedback.textContent = "URL aggiunta. Il primo check e stato messo in coda.";
+    feedback.textContent = "URL added. The first check has been queued.";
     await refresh();
   } catch (error) {
     feedback.textContent = error.message;

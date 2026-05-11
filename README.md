@@ -1,75 +1,75 @@
 # DOM Metadata Monitor
 
-Applicazione web per monitorare ogni giorno delle URL inserite manualmente, confrontare la baseline dei metadati e dei dati strutturati nel DOM renderizzato e mostrare eventuali anomalie dentro una dashboard web.
+Web application that monitors manually entered URLs once per day, compares a metadata and structured data baseline against the rendered DOM, and surfaces anomalies in an online dashboard.
 
-## Cosa fa
+## What it does
 
-- acquisisce HTML renderizzato lato browser
-- estrae `title`, `meta`, `canonical`, `alternate`, JSON-LD, microdata e RDFa
-- crea una baseline al primo check valido
-- esegue controlli successivi e confronta lo snapshot corrente con la baseline
-- genera alert quando il codice cambia
-- espone una dashboard web per URL, stato, storico breve e notifiche
+- captures browser-rendered HTML
+- extracts `title`, `meta`, `canonical`, `alternate`, JSON-LD, microdata, and RDFa
+- creates a baseline from the first valid check
+- runs later checks and compares the current snapshot with the baseline
+- generates alerts when code changes
+- exposes a web dashboard for URLs, status, recent history, and notifications
 
-## Architettura attuale
+## Current architecture
 
-Il repository contiene due modalita:
+The repository includes two modes:
 
-- locale Node:
+- local Node mode:
   - `src/server.js`
   - `src/monitor.js`
   - `src/storage.js`
-- Cloudflare:
-  - `public/`: asset statici della dashboard
-  - `public/_worker.js`: entrypoint Pages in advanced mode
-  - `cloudflare/pages-worker.mjs`: API HTTP per Cloudflare Pages
-  - `cloudflare/shared/`: logica condivisa di storage, parsing e diff
-  - `workers/scheduler.mjs`: Worker separato con cron trigger giornaliero
-  - `migrations/001_init.sql`: schema D1
-- `wrangler.jsonc`: configurazione Pages
-  - `wrangler.scheduler.jsonc`: configurazione Worker scheduler
+- Cloudflare mode:
+  - `public/`: dashboard static assets
+  - `public/_worker.js`: Pages advanced mode entrypoint
+  - `cloudflare/pages-worker.mjs`: HTTP API for Cloudflare Pages
+  - `cloudflare/shared/`: shared storage, parsing, diff, and security logic
+  - `workers/scheduler.mjs`: separate worker with a daily cron trigger
+  - `migrations/001_init.sql`: D1 schema
+  - `wrangler.jsonc`: Pages configuration
+  - `wrangler.scheduler.jsonc`: scheduler worker configuration
 
-## Avvio locale con Node
+## Run locally with Node
 
-Da PowerShell:
+From PowerShell:
 
 ```powershell
 cd C:\Users\frebeschini\Documents\Codex\2026-04-17-puoi-svilupparmi-una-soluzione-che-monitori
 .\scripts\start-local.ps1
 ```
 
-La dashboard sara disponibile su [http://localhost:4010](http://localhost:4010).
+The dashboard will be available at [http://localhost:4010](http://localhost:4010).
 
-## Stack Cloudflare
+## Cloudflare stack
 
-La versione Cloudflare usa:
+The Cloudflare version uses:
 
-- Cloudflare Pages per dashboard e API
-- Pages Functions in advanced mode tramite `public/_worker.js`
-- D1 come storage persistente
-- Browser Run REST API per ottenere HTML renderizzato
-- un Worker separato con Cron Trigger per il check giornaliero
+- Cloudflare Pages for the dashboard and API
+- Pages Functions in advanced mode through `public/_worker.js`
+- D1 for persistent storage
+- Browser Run REST API to fetch rendered HTML
+- a separate Worker with a daily cron trigger
 
-## Prerequisiti Cloudflare
+## Cloudflare prerequisites
 
-Ti servono:
+You need:
 
-- un account Cloudflare
-- un progetto Pages
-- un database D1
-- un API token Cloudflare con permesso `Browser Rendering - Edit`
-- l'`account_id` Cloudflare
-- credenziali per proteggere la dashboard: `MONITOR_USERNAME` e `MONITOR_PASSWORD`
+- a Cloudflare account
+- a Pages project
+- a D1 database
+- a Cloudflare API token with `Browser Rendering - Edit`
+- your Cloudflare `account_id`
+- dashboard credentials: `MONITOR_USERNAME` and `MONITOR_PASSWORD`
 
-## 1. Installa dipendenze
+## 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-## 2. Configura i secret locali
+## 2. Configure local secrets
 
-Crea un file `.dev.vars` partendo da `.dev.vars.example`:
+Create a `.dev.vars` file from `.dev.vars.example`:
 
 ```env
 CLOUDFLARE_ACCOUNT_ID=your_account_id
@@ -78,67 +78,67 @@ MONITOR_USERNAME=admin
 MONITOR_PASSWORD=choose_a_long_random_password
 ```
 
-La dashboard e tutte le API sono protette con `Basic Auth`. Senza `MONITOR_USERNAME` e `MONITOR_PASSWORD` il servizio rifiuta le richieste.
+The dashboard and all APIs are protected with `Basic Auth`. Without `MONITOR_USERNAME` and `MONITOR_PASSWORD`, the service rejects requests.
 
-Per la modalita locale puoi creare anche `.local.env` partendo da `.local.env.example`.
+For local Node mode, you can also create `.local.env` from `.local.env.example`.
 
-## 3. Crea il database D1
+## 3. Create the D1 database
 
-Nel dashboard o via CLI crea un database chiamato `structured-data-monitor`.
+Create a database named `structured-data-monitor` from the Cloudflare dashboard or CLI.
 
-Poi sostituisci `REPLACE_WITH_D1_DATABASE_ID` in:
+Then replace `REPLACE_WITH_D1_DATABASE_ID` in:
 
 - `wrangler.jsonc`
 - `wrangler.scheduler.jsonc`
 
-Se vuoi usare un nome diverso, aggiorna anche gli script `cf:db:apply-local` e `cf:db:apply-remote` in `package.json`.
+If you want to use a different database name, also update the `cf:db:apply-local` and `cf:db:apply-remote` scripts in `package.json`.
 
-## 4. Applica la migration D1
+## 4. Apply the D1 migration
 
-In locale:
+Local:
 
 ```bash
 npm run cf:db:apply-local
 ```
 
-In remoto:
+Remote:
 
 ```bash
 npm run cf:db:apply-remote
 ```
 
-## 5. Testa Pages in locale
+## 5. Test Pages locally
 
 ```bash
 npm run cf:pages:dev
 ```
 
-Questo serve gli asset da `public/` e attiva la API Cloudflare tramite `_worker.js`.
+This serves assets from `public/` and activates the Cloudflare API through `_worker.js`.
 
-## 6. Deploy della dashboard su Pages
+## 6. Deploy the dashboard to Pages
 
-Opzione consigliata:
+Recommended option:
 
-1. Vai in Cloudflare `Workers & Pages`
-2. Crea un progetto Pages collegando il repo GitHub
-3. Imposta come output directory `public`
-4. Aggiungi il binding D1 `DB`
-5. Aggiungi i secret:
+1. Go to Cloudflare `Workers & Pages`
+2. Create a Pages project connected to your GitHub repository
+3. Set the output directory to `public`
+4. Add the D1 binding `DB`
+5. Add these secrets:
    - `CLOUDFLARE_ACCOUNT_ID`
    - `BROWSER_RUN_API_TOKEN`
    - `MONITOR_USERNAME`
    - `MONITOR_PASSWORD`
-6. Deploya il progetto
+6. Deploy the project
 
-In alternativa via CLI:
+Or via CLI:
 
 ```bash
 npm run cf:pages:deploy
 ```
 
-## 7. Deploy del worker scheduler giornaliero
+## 7. Deploy the daily scheduler worker
 
-Il check periodico non gira dentro Pages: usa il Worker separato in `workers/scheduler.mjs`.
+The periodic check does not run inside Pages. It uses the separate worker in `workers/scheduler.mjs`.
 
 Deploy:
 
@@ -146,46 +146,47 @@ Deploy:
 npm run cf:cron:deploy
 ```
 
-Poi configura nel dashboard del Worker:
+Then configure the following on the worker:
 
 - secret `CLOUDFLARE_ACCOUNT_ID`
 - secret `BROWSER_RUN_API_TOKEN`
 - secret `MONITOR_USERNAME`
 - secret `MONITOR_PASSWORD`
-- binding D1 `DB`
+- D1 binding `DB`
 
-Il cron di default e:
+The default cron is:
 
 ```text
 0 6 * * *
 ```
 
-cioe un'esecuzione al giorno alle `06:00 UTC`.
+That means one run per day at `06:00 UTC`.
 
-Se vuoi cambiare l'orario, modifica `wrangler.scheduler.jsonc`.
+If you want to change the schedule, edit `wrangler.scheduler.jsonc`.
 
-## Come funziona su Cloudflare
+## How it works on Cloudflare
 
-- la dashboard continua a chiamare `/api/status`, `/api/targets`, `/api/alerts`
-- il backend Cloudflare salva target, snapshot, run e alert dentro D1
-- quando aggiungi una URL o lanci un check manuale, Pages chiama Browser Run e aggiorna D1
-- una volta al giorno il Worker scheduler esegue i controlli sulle URL attive e aggiorna lo stato
+- the dashboard keeps calling `/api/status`, `/api/targets`, and `/api/alerts`
+- the Cloudflare backend stores targets, snapshots, runs, and alerts in D1
+- when you add a URL or trigger a manual check, Pages calls Browser Run and updates D1
+- once per day, the scheduler worker checks active URLs and updates the state
 
-## Note importanti
+## Important notes
 
-- la versione Cloudflare usa HTML renderizzato via Browser Run, non Playwright locale
-- lo storage runtime non e piu su file JSON ma su D1
-- `data/db.json` resta escluso dal repo e serve solo alla modalita locale Node
-- il backend locale Node non e stato rimosso: puoi continuare a usare `localhost:4010`
-- gli endpoint accettano solo URL `http/https` e bloccano host locali o privati
-- la dashboard online e locale richiede autenticazione HTTP Basic
+- the Cloudflare version uses Browser Run rendered HTML, not local Playwright
+- runtime storage is no longer file-based JSON; it uses D1
+- `data/db.json` stays excluded from the repository and is only used by local Node mode
+- the local Node backend was not removed, so you can still use `localhost:4010`
+- endpoints accept only `http/https` URLs and block local or private hosts
+- both the online and local dashboards require HTTP Basic authentication
 
-## File principali per Cloudflare
+## Main Cloudflare files
 
 - `public/_worker.js`
 - `cloudflare/pages-worker.mjs`
 - `cloudflare/shared/repository.mjs`
 - `cloudflare/shared/monitoring.mjs`
+- `cloudflare/shared/security.mjs`
 - `workers/scheduler.mjs`
 - `migrations/001_init.sql`
 - `wrangler.jsonc`

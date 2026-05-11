@@ -192,7 +192,7 @@ export function jsonResponse(payload, status = 200, extraHeaders = {}) {
 
 export function unauthorizedResponse(realm = "DOM Metadata Monitor") {
   return jsonResponse(
-    { error: "Autenticazione richiesta." },
+    { error: "Authentication required." },
     401,
     { "WWW-Authenticate": `Basic realm="${realm}", charset="UTF-8"` }
   );
@@ -208,7 +208,7 @@ export function requireBasicAuth(request, env, realm = "DOM Metadata Monitor") {
 
   if (!expectedUsername || !expectedPassword) {
     return serviceUnavailableResponse(
-      "Configura MONITOR_USERNAME e MONITOR_PASSWORD prima di esporre la dashboard."
+      "Set MONITOR_USERNAME and MONITOR_PASSWORD before exposing the dashboard."
     );
   }
 
@@ -253,7 +253,7 @@ export function enforceWriteRateLimit(request, limit = DEFAULT_WRITE_LIMIT) {
   current.count += 1;
   if (current.count > limit.maxRequests) {
     return jsonResponse(
-      { error: "Hai superato il limite di richieste in scrittura. Riprova tra poco." },
+      { error: "You have exceeded the write request limit. Please try again shortly." },
       429,
       {
         "Retry-After": String(Math.ceil((current.resetAt - now) / 1000)),
@@ -270,27 +270,27 @@ export function validateMonitorUrl(urlString) {
   try {
     parsedUrl = new URL(String(urlString || "").trim());
   } catch {
-    throw new Error("Inserisci una URL valida.");
+    throw new Error("Enter a valid URL.");
   }
 
   if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-    throw new Error("Sono permesse solo URL http o https.");
+    throw new Error("Only http and https URLs are allowed.");
   }
 
   if (!parsedUrl.hostname) {
-    throw new Error("La URL deve contenere un hostname valido.");
+    throw new Error("The URL must contain a valid hostname.");
   }
 
   if (parsedUrl.username || parsedUrl.password) {
-    throw new Error("Le URL con credenziali integrate non sono consentite.");
+    throw new Error("URLs with embedded credentials are not allowed.");
   }
 
   if (isPrivateHost(parsedUrl.hostname)) {
-    throw new Error("Non e possibile monitorare host locali, privati o riservati.");
+    throw new Error("Local, private, or reserved hosts cannot be monitored.");
   }
 
   if (parsedUrl.href.length > 2048) {
-    throw new Error("La URL e troppo lunga.");
+    throw new Error("The URL is too long.");
   }
 
   return parsedUrl.toString();
@@ -300,7 +300,7 @@ export function validateLabel(label) {
   const normalized = String(label || "").trim();
 
   if (normalized.length > 120) {
-    throw new Error("L'etichetta non puo superare 120 caratteri.");
+    throw new Error("The label cannot exceed 120 characters.");
   }
 
   return normalized;

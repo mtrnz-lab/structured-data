@@ -52,7 +52,7 @@ async function handleApi(request, env, ctx, pathname) {
     const targetId = targetCheckMatch[1];
     ctx.waitUntil(
       runTargetCheck(env, targetId).catch((error) => {
-        console.error("Errore check manuale:", error.message);
+        console.error("Manual check error:", error.message);
       })
     );
     return jsonResponse({ queued: true, targetId }, 202);
@@ -70,7 +70,7 @@ async function handleApi(request, env, ctx, pathname) {
     if (!target.lastSnapshot) {
       ctx.waitUntil(
         runTargetCheck(env, target.id).catch((error) => {
-          console.error("Errore baseline refresh:", error.message);
+          console.error("Baseline refresh error:", error.message);
         })
       );
     }
@@ -115,12 +115,12 @@ export default {
           return response;
         }
 
-        return jsonResponse({ error: "Endpoint non trovato." }, 404);
+        return jsonResponse({ error: "Endpoint not found." }, 404);
       }
 
       return withSecurityHeaders(await env.ASSETS.fetch(request));
     } catch (error) {
-      return jsonResponse({ error: error.message || "Errore inatteso." }, 500);
+      return jsonResponse({ error: error.message || "Unexpected error." }, 500);
     }
   },
 };

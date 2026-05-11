@@ -23,7 +23,7 @@ export default {
       return jsonResponse({ ok: true });
     }
 
-    return jsonResponse({ error: "Endpoint non trovato." }, 404);
+    return jsonResponse({ error: "Endpoint not found." }, 404);
   },
 
   async scheduled(_controller, env, ctx) {

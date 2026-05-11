@@ -142,7 +142,7 @@ async function handleApi(request, response, pathname) {
       const existing = state.targets.find((entry) => entry.url === url);
 
       if (existing) {
-        throw new Error("Questa URL e gia monitorata.");
+        throw new Error("This URL is already being monitored.");
       }
 
       const createdAt = new Date().toISOString();
@@ -185,9 +185,9 @@ async function handleApi(request, response, pathname) {
     const target = await storage.withState((state) => {
       const current = state.targets.find((entry) => entry.id === targetId);
 
-      if (!current) {
-        throw new Error("Target non trovato.");
-      }
+        if (!current) {
+          throw new Error("Target not found.");
+        }
 
       current.active = !current.active;
       current.updatedAt = new Date().toISOString();
@@ -220,7 +220,7 @@ async function handleApi(request, response, pathname) {
       const current = state.targets.find((entry) => entry.id === targetId);
 
       if (!current) {
-        throw new Error("Target non trovato.");
+        throw new Error("Target not found.");
       }
 
       if (current.lastSnapshot) {
@@ -264,7 +264,7 @@ async function handleApi(request, response, pathname) {
       const current = state.alerts.find((entry) => entry.id === alertId);
 
       if (!current) {
-        throw new Error("Alert non trovato.");
+        throw new Error("Alert not found.");
       }
 
       current.status = "acknowledged";
@@ -314,14 +314,14 @@ async function bootstrap() {
         return;
       }
 
-      sendJson(response, 404, { error: "Endpoint non trovato." });
+      sendJson(response, 404, { error: "Endpoint not found." });
     } catch (error) {
-      sendJson(response, 500, { error: error.message || "Errore inatteso." });
+      sendJson(response, 500, { error: error.message || "Unexpected error." });
     }
   });
 
   server.listen(PORT, () => {
-    console.log(`Dashboard disponibile su http://localhost:${PORT}`);
+    console.log(`Dashboard available at http://localhost:${PORT}`);
   });
 
   const shutdown = async () => {
@@ -335,6 +335,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  console.error("Avvio fallito:", error);
+  console.error("Startup failed:", error);
   process.exit(1);
 });
