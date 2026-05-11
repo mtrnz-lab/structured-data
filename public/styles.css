@@ -463,6 +463,19 @@ button.ghost {
   padding-bottom: 2px;
 }
 
+.target-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+.target-main {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+}
+
 .details-drawer {
   border: 1px solid rgba(111, 243, 255, 0.18);
   border-radius: 18px;
@@ -622,25 +635,34 @@ button.ghost {
   padding-bottom: calc(18px + env(safe-area-inset-bottom));
 }
 
-.target-card.is-expanded .details-drawer {
-  flex: 0 0 auto;
+.target-card.is-expanded .target-layout {
+  flex: 1;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.9fr);
+  align-items: start;
 }
 
-.target-card.is-expanded .details-drawer[open] {
+.target-card.is-expanded .target-details-panel {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: calc(100dvh - 180px);
+}
+
+.target-card.is-expanded .target-details-panel[open] {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  min-height: 280px;
-  max-height: min(58vh, 720px);
+  min-height: 320px;
+  max-height: calc(100dvh - 180px);
 }
 
-.target-card.is-expanded .details-drawer[open] summary {
+.target-card.is-expanded .target-details-panel[open] summary {
   position: sticky;
   top: 0;
   z-index: 1;
   background: linear-gradient(180deg, rgba(4, 18, 32, 0.98), rgba(4, 18, 32, 0.9));
 }
 
-.target-card.is-expanded .details-drawer[open] .details-grid {
+.target-card.is-expanded .target-details-panel[open] .details-grid {
   min-height: 0;
   overflow-y: auto;
   padding-bottom: 18px;
@@ -785,6 +807,11 @@ button.ghost {
     grid-template-columns: 1fr;
   }
 
+  .target-layout,
+  .target-card.is-expanded .target-layout {
+    grid-template-columns: 1fr;
+  }
+
   .actions {
     flex-direction: column;
   }
@@ -805,6 +832,12 @@ button.ghost {
     bottom: max(8px, env(safe-area-inset-bottom));
     left: max(8px, env(safe-area-inset-left));
     padding: 18px 18px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .target-card.is-expanded .target-details-panel,
+  .target-card.is-expanded .target-details-panel[open] {
+    position: static;
+    max-height: none;
   }
 
   button {
