@@ -7,7 +7,7 @@
     {
       "binding": "DB",
       "database_name": "structured-data-monitor",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+      "database_id": "e1a98be4-7580-40ac-8775-cb04ac8ffa43"
     }
   ],
   "vars": {

@@ -26,7 +26,7 @@ Il repository contiene due modalita:
   - `cloudflare/shared/`: logica condivisa di storage, parsing e diff
   - `workers/scheduler.mjs`: Worker separato con cron trigger giornaliero
   - `migrations/001_init.sql`: schema D1
-  - `wrangler.pages.jsonc`: configurazione Pages
+- `wrangler.jsonc`: configurazione Pages
   - `wrangler.scheduler.jsonc`: configurazione Worker scheduler
 
 ## Avvio locale con Node
@@ -81,7 +81,7 @@ Nel dashboard o via CLI crea un database chiamato `structured-data-monitor`.
 
 Poi sostituisci `REPLACE_WITH_D1_DATABASE_ID` in:
 
-- `wrangler.pages.jsonc`
+- `wrangler.jsonc`
 - `wrangler.scheduler.jsonc`
 
 Se vuoi usare un nome diverso, aggiorna anche gli script `cf:db:apply-local` e `cf:db:apply-remote` in `package.json`.
@@ -176,4 +176,5 @@ Se vuoi cambiare l'orario, modifica `wrangler.scheduler.jsonc`.
 - `workers/scheduler.mjs`
 - `migrations/001_init.sql`
 - `wrangler.pages.jsonc`
+- `wrangler.jsonc`
 - `wrangler.scheduler.jsonc`

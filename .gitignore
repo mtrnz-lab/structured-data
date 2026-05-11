@@ -3,3 +3,4 @@ data/db.json
 data/*.tmp
 .wrangler/
 .dev.vars
+.wrangler-pages-dev*.log
