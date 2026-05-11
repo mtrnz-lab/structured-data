@@ -511,7 +511,7 @@ async function fetchRenderedHtml(env, url) {
     body: JSON.stringify({
       gotoOptions: {
         timeout: Number(readEnvString(env.MONITOR_CHECK_TIMEOUT_MS) || 45000),
-        waitUntil: "networkidle",
+        waitUntil: "networkidle2",
       },
       url: safeUrl,
     }),
